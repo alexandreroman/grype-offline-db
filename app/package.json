@@ -1,0 +1,19 @@
+{
+  "name": "grype-offline-db",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "description": "Grype offline database",
+  "author": "Alexandre Roman <aroman@vmware.com>",
+  "main": "index.js",
+  "scripts": {
+    "build": "",
+    "start": "node index.js"
+  },
+  "@engines": {
+    "node": ">=18 <19"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "log-timestamp": "^0.3.0"
+  }
+}

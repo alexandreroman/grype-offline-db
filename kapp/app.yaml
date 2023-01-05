@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grype-offline-values
+  annotations:
+    kapp.k14s.io/change-group: grype-offline/app
+    kapp.k14s.io/change-rule: "upsert after upserting grype-offline/rbac"
+stringData:
+  values.yaml: |
+    db:
+      #! Set to "true" to override the database "built" property,
+      #! setting the value to current timestamp. This allows you
+      #! to report the Grype database as "up-to-date".
+      #! Use with caution since Grype will not be able to report
+      #! the use of an outdated database.
+      useDateNow: true
+---
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: grype-offline
+  annotations:
+    kapp.k14s.io/change-group: grype-offline/app
+    kapp.k14s.io/change-rule: "upsert after upserting grype-offline/rbac"
+spec:
+  serviceAccountName: grype-offline-sa
+  syncPeriod: 30m
+  fetch:
+  - imgpkgBundle:
+      #! Update this attribute in case you uploaded the bundle
+      #! to your registry.
+      image: ghcr.io/alexandreroman/grype-offline-db-bundle:latest
+      #! Uncomment this section to set credentials required for
+      #! downloading images from your registry.
+      #! You need to create your credentials as a Kubernetes secret.
+      #! Use this command to generate this secret:
+      #!   kubectl create secret docker-registry grype-offline-regcreds --docker-server=myreg.corp.com --docker-username=johndoe --docker-password=changeme
+      #! secretRef:
+      #!   name: grype-offline-regcreds
+  template:
+  - ytt:
+      inline:
+        paths:
+          configmap-overlay.yaml: |
+            #@ load("@ytt:overlay", "overlay")
+            #@ load("@ytt:data", "data")
+            #@overlay/match by=overlay.subset({"kind": "ConfigMap"}),expects=1
+            ---
+            data:
+              USE_DATE_NOW: #@ str(data.values.db.useDateNow)
+          #! Uncomment this overlay in case you need to set credentials
+          #! for downloading images from your registry.
+          #! You also need to create a Kubernetes secret in namespace grype-offline
+          #! with your registry credentials (see above).
+          #! imagepullsecrets-overlay.yaml: |
+          #!   #@ load("@ytt:overlay", "overlay")
+          #!   #@overlay/match by=overlay.subset({"kind": "Service", "apiVersion": "serving.knative.dev/v1"}),expects=1
+          #!   ---
+          #!   spec:
+          #!     template:
+          #!       spec:
+          #!         #@overlay/match missing_ok=True
+          #!         imagePullSecrets:
+          #!         - name: grype-offline-regcreds
+      paths:
+      - "."
+      valuesFrom:
+      - secretRef:
+          name: grype-offline-values
+  - kbld:
+      paths:
+      - .imgpkg/images.yml
+      - "-"
+  deploy:
+  - kapp: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grype-offline-sa
+  annotations:
+    kapp.k14s.io/change-group: grype-offline/rbac
+    kapp.k14s.io/change-rule: "delete after deleting grype-offline/app"
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: grype-offline-cluster-role
+  annotations:
+    kapp.k14s.io/change-group: grype-offline/rbac
+    kapp.k14s.io/change-rule: "delete after deleting grype-offline/app"
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: grype-offline-cluster-role-binding
+  annotations:
+    kapp.k14s.io/change-group: grype-offline/rbac
+    kapp.k14s.io/change-rule: "delete after deleting grype-offline/app"
+subjects:
+- kind: ServiceAccount
+  name: grype-offline-sa
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: grype-offline-cluster-role

@@ -1,0 +1,28 @@
+name: Deploy a bundle including a Grype database
+
+on:
+  push:
+    branches:
+    - main
+    - features/**
+  schedule:
+  - cron: '22 8 * * 1-5'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: buildpacks/github-actions/setup-pack@v5.0.0
+    - uses: anchore/scan-action/download-grype@v3.3.2
+    - name: Log in to the container registry
+      uses: docker/login-action@v2.1.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and deploy image
+      run: make install

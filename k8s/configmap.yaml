@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db
+  namespace: grype-offline
+  labels:
+    app.kubernetes.io/part-of: grype-offline
+  annotations:
+    kapp.k14s.io/versioned : ""
+data:
+  #! Set to "true" to override the database "built" property,
+  #! setting the value to current timestamp. This allows you
+  #! to report the Grype database as "up-to-date".
+  #! Use with caution since Grype will not be able to report
+  #! the use of an outdated database.
+  USE_DATE_NOW: "true"
+
+  #! Uncomment BASE_URL to override the URL prefix
+  #! used for downloading the Grype offline database
+  #! (the one set in /listing.json).
+  #! BASE_URL: http://localhost:8080

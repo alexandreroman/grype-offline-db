@@ -1,0 +1,27 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: db
+  namespace: grype-offline
+  labels:
+    app.kubernetes.io/part-of: grype-offline
+spec:
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/alexandreroman/grype-offline-db
+        envFrom:
+        - configMapRef:
+            name: db
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128M
+          limits:
+            memory: 128M
+        livenessProbe:
+          httpGet:
+            path: /
+        readinessProbe:
+          httpGet:
+            path: /
