@@ -27,8 +27,9 @@ spec:
   syncPeriod: 30m
   fetch:
   - imgpkgBundle:
-      #! Update this attribute in case you uploaded the bundle
-      #! to your registry.
+      #! Use this command to copy and upload the bundle to your registry:
+      #!   imgpkg copy --bundle ghcr.io/alexandreroman/grype-offline-db-bundle --to-repo myreg.corp.com/grype-offline/grype-offline-db-bundle
+      #! Then update this attribute and refer to your registry:
       image: ghcr.io/alexandreroman/grype-offline-db-bundle:latest
       #! Uncomment this section to set credentials required for
       #! downloading images from your registry.
@@ -50,8 +51,6 @@ spec:
               USE_DATE_NOW: #@ str(data.values.db.useDateNow)
           #! Uncomment this overlay in case you need to set credentials
           #! for downloading images from your registry.
-          #! You also need to create a Kubernetes secret in namespace grype-offline
-          #! with your registry credentials (see above).
           #! imagepullsecrets-overlay.yaml: |
           #!   #@ load("@ytt:overlay", "overlay")
           #!   #@overlay/match by=overlay.subset({"kind": "Service", "apiVersion": "serving.knative.dev/v1"}),expects=1
