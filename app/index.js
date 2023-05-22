@@ -10,11 +10,11 @@ const app = express()
 
 require('log-timestamp')
 
-const useDateNow =
-  ('true' === process.env.USE_DATE_NOW
-  | 'True' === process.env.USE_DATE_NOW
-  | 'yes'  === process.env.USE_DATE_NOW
-  | '1'    === process.env.USE_DATE_NOW) || false
+const disableDbExpiration =
+  ('true' === process.env.DISABLE_DB_EXPIRATION
+  | 'True' === process.env.DISABLE_DB_EXPIRATION
+  | 'yes'  === process.env.DISABLE_DB_EXPIRATION
+  | '1'    === process.env.DISABLE_DB_EXPIRATION) || false
 
 app.get('/', (req, res) => {
   const year = 2023
@@ -41,7 +41,7 @@ app.get('/listing.json', (req, res) => {
     const url = new URL('grype-db.tar.gz', baseUrl).toString()
     dbJson.url = url;
 
-    if(useDateNow) {
+    if(disableDbExpiration) {
       dbJson.built = new Date().toISOString()
     }
 

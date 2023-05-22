@@ -13,7 +13,7 @@ stringData:
       #! to report the Grype database as "up-to-date".
       #! Use with caution since Grype will not be able to report
       #! the use of an outdated database.
-      useDateNow: true
+      disableExpiration: true
 ---
 apiVersion: kappctrl.k14s.io/v1alpha1
 kind: App
@@ -48,7 +48,7 @@ spec:
             #@overlay/match by=overlay.subset({"kind": "ConfigMap"}),expects=1
             ---
             data:
-              USE_DATE_NOW: #@ str(data.values.db.useDateNow)
+              DISABLE_DB_EXPIRATION: #@ str(data.values.db.disableExpiration)
           #! Uncomment this overlay in case you need to set credentials
           #! for downloading images from your registry.
           #! imagepullsecrets-overlay.yaml: |

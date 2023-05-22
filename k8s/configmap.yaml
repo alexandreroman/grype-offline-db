@@ -13,7 +13,7 @@ data:
   #! to report the Grype database as "up-to-date".
   #! Use with caution since Grype will not be able to report
   #! the use of an outdated database.
-  USE_DATE_NOW: "true"
+  DISABLE_DB_EXPIRATION: "true"
 
   #! Uncomment BASE_URL to override the URL prefix
   #! used for downloading the Grype offline database
