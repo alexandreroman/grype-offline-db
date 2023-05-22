@@ -36,7 +36,7 @@ install: build
 	imgpkg push --bundle $(BUNDLE_IMAGE) --file out/bundle
 
 run:
-	docker run --rm -p 8080:8080 -e USE_DATE_NOW=true -e BASE_URL=http://localhost:8080 $(APP_IMAGE)
+	docker run --rm -p 8080:8080 -e DISABLE_DB_EXPIRATION=true -e BASE_URL=http://localhost:8080 $(APP_IMAGE)
 
 clean:
 	rm -rf out
