@@ -30,60 +30,14 @@ This bundle contains container images and Kubernetes deployment files
 you need to run this app.
 
 Download the [app deployment file](kapp/app.yaml) to your workstation,
-and edit this file accordingly.
-
-Edit the bundle image using your private registry:
+and edit this file accordingly by using your private registry:
 
 ```yaml
 - imgpkgBundle:
     image: myreg.corp.com/grype-offline/grype-offline-db-bundle:latest
 ```
 
-Uncomment the sections related to registry credentials:
-
-```yaml
-- imgpkgBundle:
-    #! You need to create your credentials as a Kubernetes secret.
-    #! Use this command to generate this secret:
-    #!   kubectl create secret docker-registry grype-offline-regcreds --docker-server=myreg.corp.com --docker-username=johndoe --docker-password=changeme
-    secretRef:
-      name: grype-offline-regcreds
-```
-
-```yaml
-- ytt:
-    inline:
-      paths:
-        imagepullsecrets-overlay.yaml: |
-          #@ load("@ytt:overlay", "overlay")
-          #@overlay/match by=overlay.subset({"kind": "Service", "apiVersion": "serving.knative.dev/v1"}),expects=1
-          ---
-          spec:
-            template:
-              spec:
-                #@overlay/match missing_ok=True
-                imagePullSecrets:
-                - name: grype-offline-regcreds
-          ---
-          apiVersion: secretgen.carvel.dev/v1alpha1
-          kind: SecretExport
-          metadata:
-            name: grype-offline-regcreds
-            namespace: default
-          spec:
-            toNamespaces:
-            - grype-offline
-          ---
-          apiVersion: secretgen.carvel.dev/v1alpha1
-          kind: SecretImport
-          metadata:
-            name: grype-offline-regcreds
-            namespace: grype-offline
-          spec:
-            fromNamespace: default
-```
-
-Then you need to create a Kubernetes `Secret` holding your registry credentials:
+Create a Kubernetes `Secret` holding your registry credentials:
 
 ```shell
 kubectl create secret docker-registry grype-offline-regcreds --docker-server=myreg.corp.com --docker-username=johndoe --docker-password=changeme

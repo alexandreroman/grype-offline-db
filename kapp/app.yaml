@@ -31,13 +31,10 @@ spec:
       #!   imgpkg copy --bundle ghcr.io/alexandreroman/grype-offline-db-bundle --to-repo myreg.corp.com/grype-offline/grype-offline-db-bundle
       #! Then update this attribute and refer to your registry:
       image: ghcr.io/alexandreroman/grype-offline-db-bundle:latest
-      #! Uncomment this section to set credentials required for
-      #! downloading images from your registry.
-      #! You need to create your credentials as a Kubernetes secret.
-      #! Use this command to generate this secret:
+      #! Create a Kubernetes secret holding your registry credentials:
       #!   kubectl create secret docker-registry grype-offline-regcreds --docker-server=myreg.corp.com --docker-username=johndoe --docker-password=changeme
-      #! secretRef:
-      #!   name: grype-offline-regcreds
+      secretRef:
+        name: grype-offline-regcreds
   template:
   - ytt:
       inline:
@@ -49,35 +46,33 @@ spec:
             ---
             data:
               DISABLE_DB_EXPIRATION: #@ str(data.values.db.disableExpiration)
-          #! Uncomment this overlay in case you need to set credentials
-          #! for downloading images from your registry.
-          #! imagepullsecrets-overlay.yaml: |
-          #!   #@ load("@ytt:overlay", "overlay")
-          #!   #@overlay/match by=overlay.subset({"kind": "Service", "apiVersion": "serving.knative.dev/v1"}),expects=1
-          #!   ---
-          #!   spec:
-          #!     template:
-          #!       spec:
-          #!         #@overlay/match missing_ok=True
-          #!         imagePullSecrets:
-          #!         - name: grype-offline-regcreds
-          #!   ---
-          #!   apiVersion: secretgen.carvel.dev/v1alpha1
-          #!   kind: SecretExport
-          #!   metadata:
-          #!     name: grype-offline-regcreds
-          #!     namespace: default
-          #!   spec:
-          #!     toNamespaces:
-          #!     - grype-offline
-          #!   ---
-          #!   apiVersion: secretgen.carvel.dev/v1alpha1
-          #!   kind: SecretImport
-          #!   metadata:
-          #!     name: grype-offline-regcreds
-          #!     namespace: grype-offline
-          #!   spec:
-          #!     fromNamespace: default
+          imagepullsecrets-overlay.yaml: |
+            #@ load("@ytt:overlay", "overlay")
+            #@overlay/match by=overlay.subset({"kind": "Service", "apiVersion": "serving.knative.dev/v1"}),expects=1
+            ---
+            spec:
+              template:
+                spec:
+                  #@overlay/match missing_ok=True
+                  imagePullSecrets:
+                  - name: grype-offline-regcreds
+            ---
+            apiVersion: secretgen.carvel.dev/v1alpha1
+            kind: SecretExport
+            metadata:
+              name: grype-offline-regcreds
+              namespace: default
+            spec:
+              toNamespaces:
+              - grype-offline
+            ---
+            apiVersion: secretgen.carvel.dev/v1alpha1
+            kind: SecretImport
+            metadata:
+              name: grype-offline-regcreds
+              namespace: grype-offline
+            spec:
+              fromNamespace: default
       paths:
       - "."
       valuesFrom:
