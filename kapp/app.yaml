@@ -62,6 +62,23 @@ spec:
           #!         #@overlay/match missing_ok=True
           #!         imagePullSecrets:
           #!         - name: grype-offline-regcreds
+          #!   ---
+          #!   apiVersion: secretgen.carvel.dev/v1alpha1
+          #!   kind: SecretExport
+          #!   metadata:
+          #!     name: grype-offline-regcreds
+          #!     namespace: default
+          #!   spec:
+          #!     toNamespaces:
+          #!     - grype-offline
+          #!   ---
+          #!   apiVersion: secretgen.carvel.dev/v1alpha1
+          #!   kind: SecretImport
+          #!   metadata:
+          #!     name: grype-offline-regcreds
+          #!     namespace: grype-offline
+          #!   spec:
+          #!     fromNamespace: default
       paths:
       - "."
       valuesFrom:
