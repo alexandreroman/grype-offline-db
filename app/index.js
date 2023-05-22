@@ -4,6 +4,7 @@
  */
 
 const express = require('express')
+const path = require('path')
 const fs = require('fs')
 const { get } = require('http')
 const app = express()
@@ -59,7 +60,10 @@ app.get('/listing.json', (req, res) => {
 })
 
 app.get('/grype-db.tar.gz', (req, res) => {
-  res.sendFile('grype-db.tar.gz', { root: '.' })
+  res.sendFile('grype-db.tar.gz', {
+    root: path.join(__dirname),
+    acceptRanges: false
+  })
 })
 
 const port = process.env.PORT | 8080;
